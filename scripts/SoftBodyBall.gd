@@ -1,11 +1,11 @@
 extends Node2D
 
-@export var point_count: int = 18
-@export var radius: float = 120.0
-@export var gravity: float = 900.0
-@export var ground_y: float = 700.0
-@export var wall_left: float = 90.0
-@export var wall_right: float = 1160.0
+@export var point_count: int = 16
+@export var radius: float = 110.0
+@export var gravity: float = 850.0
+@export var ground_y: float = 640.0
+@export var wall_left: float = 30.0
+@export var wall_right: float = 1250.0
 
 var points: Array = []
 var springs: Array = []
@@ -40,31 +40,30 @@ func add_spring(a_index: int, b_index: int) -> void:
 	})
 
 func _physics_process(delta: float) -> void:
-	for iteration in range(6):
+	for _iteration in range(5):
 		solve_springs()
 
 	for item in points:
 		var p = item
 		p["vel"] += Vector2(0.0, gravity) * delta
-		p["vel"] *= 0.995
+		p["vel"] *= 0.992
 		p["pos"] += p["vel"] * delta
 
 		if p["pos"].x < wall_left:
 			p["pos"].x = wall_left
-			p["vel"].x = abs(p["vel"].x) * 0.25
+			p["vel"].x = abs(p["vel"].x) * 0.35
 		elif p["pos"].x > wall_right:
 			p["pos"].x = wall_right
-			p["vel"].x = -abs(p["vel"].x) * 0.25
+			p["vel"].x = -abs(p["vel"].x) * 0.35
 
 		if p["pos"].y > ground_y:
 			p["pos"].y = ground_y
 			p["vel"].y = -abs(p["vel"].y) * 0.45
 
-		if p["pos"].y < 60.0:
-			p["pos"].y = 60.0
+		if p["pos"].y < 30.0:
+			p["pos"].y = 30.0
 			p["vel"].y = abs(p["vel"].y) * 0.2
 
-	# Keep the mass centered so it feels like a single softball instead of drifting away.
 	var center = Vector2.ZERO
 	for item in points:
 		center += item["pos"]
@@ -72,8 +71,8 @@ func _physics_process(delta: float) -> void:
 
 	for item in points:
 		var offset = item["pos"] - center
-		if offset.length() > radius * 1.45:
-			item["pos"] = center + offset.normalized() * radius * 1.45
+		if offset.length() > radius * 1.5:
+			item["pos"] = center + offset.normalized() * radius * 1.5
 
 	queue_redraw()
 
@@ -89,13 +88,13 @@ func solve_springs() -> void:
 		a["pos"] += correction
 		b["pos"] -= correction
 
-func hit_at(position: Vector2, strength: float = 300.0) -> void:
+func hit_at(position: Vector2, strength: float = 400.0) -> void:
 	for item in points:
 		var offset = item["pos"] - position
 		var distance = offset.length()
-		if distance < 200.0:
-			var influence = 1.0 - (distance / 200.0)
-			item["vel"] += offset.normalized() * influence * strength * 0.35
+		if distance < 180.0:
+			var push = 1.0 - (distance / 180.0)
+			item["vel"] += offset.normalized() * push * strength * 0.35
 
 func _draw() -> void:
 	if points.size() < 3:
@@ -109,7 +108,7 @@ func _draw() -> void:
 	for i in range(points.size()):
 		var current = points[i]["pos"]
 		var next = points[(i + 1) % points.size()]["pos"]
-		draw_line(current, next, Color(1.0, 1.0, 1.0, 0.7), 2.0)
+		draw_line(current, next, Color(1.0, 1.0, 1.0, 0.8), 2.0)
 
 	for item in points:
 		draw_circle(item["pos"], 4.0, Color(1.0, 1.0, 1.0, 0.9))
